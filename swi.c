@@ -670,13 +670,24 @@ unify_termVP(term_t t, va_list_rec *argsRecP)
     case PL_ATOM:
       rval = PL_unify_atom(t, va_arg(args, atom_t));
       break;
+    case PL_BOOL:
+    { int v = va_arg(args, int);
+      rval = PL_unify_atom(t, v ? ATOM_true : ATOM_false);
+      break;
+    }
+    case PL_SHORT:
+    case PL_INT:
+      rval = PL_unify_integer(t, va_arg(args, int));
+      break;
     case PL_INTEGER:
+    case PL_LONG:
       rval = PL_unify_integer(t, va_arg(args, long));
       break;
     case PL_POINTER:
       rval = PL_unify_pointer(t, va_arg(args, void *));
       break;
     case PL_FLOAT:
+    case PL_DOUBLE:
       rval = PL_unify_float(t, va_arg(args, double));
       break;
     case PL_TERM:
@@ -685,12 +696,27 @@ unify_termVP(term_t t, va_list_rec *argsRecP)
     case PL_CHARS:
       rval = PL_unify_atom_chars(t, va_arg(args, const char *));
       break;
+  { functor_t ft;
+    int arity;
+
+    case PL_FUNCTOR_CHARS:
+    { const char *s = va_arg(args, const char *);
+      atom_t a = PL_new_atom(s);
+
+      arity = va_arg(args, int);
+      ft = PL_new_functor(a, arity);
+      PL_unregister_atom(a);
+      goto common_f;
+    }
     case PL_FUNCTOR:
-    { functor_t ft = va_arg(args, functor_t);
-      int arity = ft->arity;
-      term_t tmp = PL_new_term_ref();
+    { term_t tmp;
       int n;
 
+      ft = va_arg(args, functor_t);
+      arity = ft->arity;
+
+    common_f:
+      tmp = PL_new_term_ref();
       if ( !PL_unify_functor(t, ft) )
 	goto failout;
 
@@ -710,6 +736,7 @@ unify_termVP(term_t t, va_list_rec *argsRecP)
       PL_reset_term_refs(tmp);
       break;
     }
+  }
     case PL_LIST:
     { int length = va_arg(args, int);
       term_t tmp = PL_copy_term_ref(t);

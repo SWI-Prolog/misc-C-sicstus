@@ -133,6 +133,12 @@ typedef SP_term_ref			   PL_fid_t;
 #define PL_CHARS    7
 #define PL_FUNCTOR  8
 #define PL_LIST     9
+#define PL_BOOL	   10
+#define PL_SHORT   11
+#define PL_INT	   12
+#define PL_LONG	   13
+#define PL_DOUBLE  14
+#define PL_FUNCTOR_CHARS 15
 
 #define CVT_ATOM	0x0001
 #define CVT_STRING	0x0002
